@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>北海道0108-0113></title>
+  <title>北海道五日遊</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont;
@@ -57,12 +57,43 @@
       color: #666;
       text-align: center;
     }
+    /* 翻譯區 */
+    .translator {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .translator textarea {
+      width: 100%;
+      height: 60px;
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    .translator select, .translator button {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-right: 6px;
+      cursor: pointer;
+    }
+    .translator .output {
+      margin-top: 8px;
+      padding: 8px;
+      background: #eef3ff;
+      border-radius: 8px;
+      min-height: 30px;
+    }
   </style>
 </head>
 
 <body>
 
-<h1>❄️ 冬季北海道 5 天互動行程助手</h1>
+<h1>❄️1/8-1/13北海道五日遊❄️ </h1>
 <p>條件：3 位成人｜新千歲進出｜冬天｜JR＋租車混合｜景點＋美食、不趕</p>
 
 <div class="card">
@@ -103,6 +134,18 @@
   <p><span class="tag easy">🟢 緩衝日</span> 場外市場、最後補買，提早進機場。</p>
 </div>
 
+<!-- 翻譯互動區 -->
+<div class="translator">
+  <h2>💬 中日文互動翻譯</h2>
+  <textarea id="inputText" placeholder="輸入中文或日文文字"></textarea><br>
+  <select id="targetLang">
+    <option value="ja">翻譯成日文</option>
+    <option value="zh">翻譯成中文</option>
+  </select>
+  <button onclick="translate()">翻譯</button>
+  <div class="output" id="outputText"></div>
+</div>
+
 <footer>
   冬天建議：16:00 後避免戶外｜注意末班車｜雪況差就選 B 👍
 </footer>
@@ -135,6 +178,31 @@
   selectOption("otaru","A");
   selectOption("asahikawa","A");
   selectOption("biei","B");
+
+  // 翻譯功能 (使用 LibreTranslate 免費 API)
+  async function translate() {
+    const text = document.getElementById("inputText").value.trim();
+    const target = document.getElementById("targetLang").value;
+    if(!text) return;
+
+    try {
+      const res = await fetch('https://libretranslate.de/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          q: text,
+          source: target === 'ja' ? 'zh' : 'ja',
+          target: target,
+          format: "text"
+        })
+      });
+      const data = await res.json();
+      document.getElementById("outputText").innerText = data.translatedText;
+    } catch (e) {
+      document.getElementById("outputText").innerText = "翻譯失敗，請稍後再試";
+      console.error(e);
+    }
+  }
 </script>
 
 </body>
