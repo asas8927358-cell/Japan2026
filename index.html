@@ -12,9 +12,7 @@
       padding: 16px;
       line-height: 1.6;
     }
-    h1, h2 {
-      margin-top: 1.2em;
-    }
+    h1, h2 { margin-top: 1.2em; }
     .card {
       background: #fff;
       border-radius: 12px;
@@ -71,12 +69,13 @@
 
 <body>
 
-<h1>❄️1/8-1/13北海道 五日遊❄️</h1>
-<p>條件：3 位成人｜新千歲進出｜冬天｜JR＋租車混合｜景點＋美食、不趕</p>
+<h1>❄️北海道_行程導覽❄️</h1>
+<p>📅1月2日 - 1月5日 ｜ 旅遊  </p>
 
+<!-- 行程卡片 -->
 <div class="card">
-  <h2>Day 1｜新千歲 → 札幌</h2>
-  <p><span class="tag easy">🟢 輕鬆</span> JR 快速エアポート（約 37 分）</p>
+  <h2>Day 1｜台灣 → 札幌</h2>
+  <p><span class="tag easy">🟢 輕鬆</span>9:20起飛🛫</p>
   <p>大通公園、狸小路、地下街，適應寒冷的一天。</p>
 </div>
 
@@ -124,7 +123,7 @@
       <option value="JPY2TWD">日幣 → 台幣</option>
     </select>
   </div>
-  <div class="info" id="exchangeResult" style="margin-top:6px;">輸入金額即時換算</div>
+  <div class="info" id="exchangeResult" style="margin-top:6px;">等待匯率更新...</div>
 </div>
 
 <footer>
@@ -132,57 +131,57 @@
 </footer>
 
 <script>
+  // 行程互動
   const data = {
-    otaru: {
-      A: "JR 約 45 分｜🟡 體力中｜經典運河、音樂盒｜⚠️ 逆風體感低",
-      B: "JR 約 45 分｜🟢 輕鬆｜咖啡＋甜點｜冬天舒服首選"
-    },
-    asahikawa: {
-      A: "JR 特急 1h25m｜🟡 偏累｜企鵝散步｜⚠️ 戶外久站需保暖",
-      B: "JR 特急 1h25m｜🟢 中｜拉麵＋咖啡｜雪大時保命"
-    },
-    biei: {
-      A: "租車 1 日｜🟡 中｜藍池＋白鬚瀑布｜⚠️ 雪駕需經驗",
-      B: "無移動｜🟢 輕鬆｜札幌咖啡＋購物｜最安全"
-    }
+    otaru: { A:"JR 約 45 分｜🟡 體力中｜經典運河、音樂盒｜⚠️ 逆風體感低", B:"JR 約 45 分｜🟢 輕鬆｜咖啡＋甜點｜冬天舒服首選" },
+    asahikawa: { A:"JR 特急 1h25m｜🟡 偏累｜企鵝散步｜⚠️ 戶外久站需保暖", B:"JR 特急 1h25m｜🟢 中｜拉麵＋咖啡｜雪大時保命" },
+    biei: { A:"租車 1 日｜🟡 中｜藍池＋白鬚瀑布｜⚠️ 雪駕需經驗", B:"無移動｜🟢 輕鬆｜札幌咖啡＋購物｜最安全" }
   };
 
   function selectOption(day, opt) {
-    document.getElementById(day + "Info").innerText = data[day][opt];
-    ["A","B"].forEach(o => {
-      const btn = document.getElementById(day + o);
-      btn.classList.toggle("active", o === opt);
-    });
+    document.getElementById(day+"Info").innerText = data[day][opt];
+    ["A","B"].forEach(o => document.getElementById(day+o).classList.toggle("active", o===opt));
   }
 
-  // 預設選項
   selectOption("otaru","A");
   selectOption("asahikawa","A");
   selectOption("biei","B");
 
-  // 即時匯率換算
-  const exchangeRate = 3.1; // 範例匯率 1 TWD ≈ 3.1 JPY
+  // 匯率 API
+  const API_URL = "https://api.exchangerate-api.com/v4/latest/TWD";
+  let currentRate = null;
+
+  async function fetchRate() {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      currentRate = data.rates.JPY;
+      document.getElementById("exchangeResult").innerText = "最新匯率已更新";
+    } catch(e) {
+      console.error("匯率抓取失敗:", e);
+      document.getElementById("exchangeResult").innerText = "無法取得最新匯率";
+    }
+  }
 
   function updateExchange() {
     const amount = parseFloat(document.getElementById("amount").value);
     const direction = document.getElementById("currencyDir").value;
-    if (isNaN(amount)) {
-      document.getElementById("exchangeResult").innerText = "請輸入有效數字";
+    if (isNaN(amount) || currentRate === null) {
+      document.getElementById("exchangeResult").innerText = "請先輸入有效數字並等待匯率更新";
       return;
     }
-    let result = 0;
-    if (direction === "TWD2JPY") result = amount * exchangeRate;
-    else result = amount / exchangeRate;
+    let result = direction === "TWD2JPY" ? amount * currentRate : amount / currentRate;
     document.getElementById("exchangeResult").innerText =
       direction === "TWD2JPY"
-      ? `${amount} 台幣 ≈ ${result.toFixed(0)} 日幣`
-      : `${amount} 日幣 ≈ ${result.toFixed(0)} 台幣`;
+        ? `${amount} 台幣 ≈ ${result.toFixed(0)} 日幣 (1 TWD ≈ ${currentRate.toFixed(3)} JPY)`
+        : `${amount} 日幣 ≈ ${result.toFixed(0)} 台幣 (1 TWD ≈ ${currentRate.toFixed(3)} JPY)`;
   }
 
-  // 綁定輸入與選擇事件
+  // 綁定事件
   document.getElementById("amount").addEventListener("input", updateExchange);
   document.getElementById("currencyDir").addEventListener("change", updateExchange);
 
+  fetchRate(); // 初始載入抓一次匯率
 </script>
 
 </body>
